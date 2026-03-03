@@ -58,8 +58,12 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         stableMenu.addItem(.separator())
 
         // Updates submenu placeholder
+        // autoenablesItems=true (default) disables items with action:nil — turn it off on stableMenu
+        // so we control enabled state explicitly.
+        stableMenu.autoenablesItems = false
         let updatesItem = NSMenuItem(title: "Updates", action: nil, keyEquivalent: "")
         updatesItem.submenu = NSMenu()
+        updatesItem.isEnabled = true
         stableMenu.addItem(updatesItem)
         updatesMenuItem = updatesItem
 
@@ -68,15 +72,18 @@ final class StatusBarController: NSObject, NSMenuDelegate {
         // Check Now / progress (swapped in updateCheckingState)
         let checkItem = NSMenuItem(title: "Check Now", action: #selector(checkNow), keyEquivalent: "r")
         checkItem.target = self
+        checkItem.isEnabled = true
         stableMenu.addItem(checkItem)
         checkNowMenuItem = checkItem
 
         let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
+        settingsItem.isEnabled = true
         stableMenu.addItem(settingsItem)
 
         let updateAllItem = NSMenuItem(title: "Update All", action: #selector(upgradeAll), keyEquivalent: "u")
         updateAllItem.target = self
+        updateAllItem.isEnabled = true
         stableMenu.addItem(updateAllItem)
 
         stableMenu.addItem(.separator())
@@ -150,6 +157,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
                 : "Results (\(displayCount) of \(totalCount))"
 
             let submenu = NSMenu()
+            submenu.autoenablesItems = false
 
             if !filteredFormulae.isEmpty {
                 let header = NSMenuItem(title: "Formulae (\(filteredFormulae.count))", action: nil, keyEquivalent: "")
@@ -162,6 +170,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
                         keyEquivalent: ""
                     )
                     item.target = self
+                    item.isEnabled = true
                     item.representedObject = PackageMenuInfo(
                         name: pkg.name,
                         installed: pkg.installedVersions.first ?? "?",
@@ -183,6 +192,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
                         keyEquivalent: ""
                     )
                     item.target = self
+                    item.isEnabled = true
                     item.representedObject = PackageMenuInfo(
                         name: cask.name,
                         installed: cask.installedVersions.first ?? "?",
