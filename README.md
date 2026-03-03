@@ -20,6 +20,16 @@ A macOS menu bar app that tracks outdated Homebrew packages and lets you upgrade
 - **Scheduled checks** — interval-based (every N minutes) or daily at a configured hour
 - **Ignored packages** — exclude packages from the outdated list via Settings
 
+## Installation
+
+Download the latest `BrewNotifier-vX.X.X.zip` from [Releases](../../releases), unzip, and move `BrewNotifier.app` to `/Applications`.
+
+**First launch:** macOS will block the app since it's not notarized. Right-click → Open → Open to bypass Gatekeeper, or run:
+
+```bash
+xattr -d com.apple.quarantine /Applications/BrewNotifier.app
+```
+
 ## Requirements
 
 - macOS 13 (Ventura) or later

@@ -24,8 +24,15 @@ jobs:
         run: |
           APP_DIR="BrewNotifier.app/Contents"
           mkdir -p "$APP_DIR/MacOS"
+          mkdir -p "$APP_DIR/Resources"
           cp .build/release/BrewNotifier "$APP_DIR/MacOS/BrewNotifier"
           cp Sources/BrewNotifier/Info.plist "$APP_DIR/Info.plist"
+          # Copy any app resources (icons etc) if present
+          if [ -d "Sources/BrewNotifier/Resources" ]; then
+            cp -r Sources/BrewNotifier/Resources/. "$APP_DIR/Resources/"
+          fi
+          # Ad-hoc sign so macOS doesn't complain about missing signature
+          codesign --force --deep --sign - "BrewNotifier.app"
           zip -r "BrewNotifier-${GITHUB_REF_NAME}.zip" BrewNotifier.app
 
       - name: Publish GitHub Release
