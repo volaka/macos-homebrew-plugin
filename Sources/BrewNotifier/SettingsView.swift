@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import BrewNotifierCore
 
@@ -66,6 +67,20 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Logs") {
+                Stepper("Retention: \(settings.logRetentionDays) days",
+                        value: $settings.logRetentionDays, in: 1...365)
+
+                HStack {
+                    Text("Log folder")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Open in Finder") {
+                        NSWorkspace.shared.open(LogService.shared.resolvedLogDirectory)
+                    }
+                }
+            }
+
             HStack {
                 Spacer()
                 Button("Check Now") { checker.checkNow() }
@@ -78,7 +93,7 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
-        .frame(width: 400, height: 340)
+        .frame(width: 400, height: 440)
     }
 
     private func hourLabel(_ hour: Int) -> String {
