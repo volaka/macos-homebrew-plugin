@@ -71,10 +71,10 @@ final class LogServiceTests: XCTestCase {
     func testMultipleConcurrentAppendsDoNotInterleave() throws {
         let handle = service.beginEvent(.fetch)
         let group = DispatchGroup()
-        for i in 0..<100 {
+        for idx in 0..<100 {
             group.enter()
             DispatchQueue.global().async {
-                self.service.appendLine("line-\(i)", to: handle)
+                self.service.appendLine("line-\(idx)", to: handle)
                 group.leave()
             }
         }
@@ -83,8 +83,8 @@ final class LogServiceTests: XCTestCase {
         service.sync()
 
         let content = try logFileContent()
-        for i in 0..<100 {
-            XCTAssertTrue(content.contains("line-\(i)\n"), "line-\(i) must appear as a complete line")
+        for idx in 0..<100 {
+            XCTAssertTrue(content.contains("line-\(idx)\n"), "line-\(idx) must appear as a complete line")
         }
     }
 

@@ -24,7 +24,7 @@ public enum EventType {
     }
 
     var detail: String? {
-        if case .upgrade(let d) = self { return d }
+        if case .upgrade(let detail) = self { return detail }
         return nil
     }
 }
