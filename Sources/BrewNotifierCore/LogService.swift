@@ -46,6 +46,24 @@ public final class LogService {
     private let queue = DispatchQueue(label: "com.volaka.BrewNotifier.LogService")
     private let settings: AppSettings
 
+    private let dayFormatter: DateFormatter = {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy-MM-dd"
+        return fmt
+    }()
+
+    private let timestampFormatter: DateFormatter = {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return fmt
+    }()
+
+    private let timeFormatter: DateFormatter = {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "HH:mm:ss"
+        return fmt
+    }()
+
     private static var defaultLogDirectory: URL {
         FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Logs/BrewNotifier")
@@ -129,11 +147,9 @@ public final class LogService {
     }
 
     private func pruneOldFiles() {
-        let cutoff = Calendar.current.date(
+        guard let cutoff = Calendar.current.date(
             byAdding: .day, value: -(settings.logRetentionDays), to: Date()
-        )!
-        let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy-MM-dd"
+        ) else { return }
 
         guard let files = try? FileManager.default.contentsOfDirectory(
             at: resolvedLogDirectory, includingPropertiesForKeys: nil
@@ -143,15 +159,13 @@ public final class LogService {
             let name = url.lastPathComponent
             guard name.hasPrefix("runtime-"), name.hasSuffix(".log") else { continue }
             let dateStr = String(name.dropFirst("runtime-".count).dropLast(".log".count))
-            guard let fileDate = fmt.date(from: dateStr), fileDate < cutoff else { continue }
+            guard let fileDate = dayFormatter.date(from: dateStr), fileDate < cutoff else { continue }
             try? FileManager.default.removeItem(at: url)
         }
     }
 
     private func writeLine(_ line: String, eventDate: Date) {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy-MM-dd"
-        let fileName = "runtime-\(fmt.string(from: eventDate)).log"
+        let fileName = "runtime-\(dayFormatter.string(from: eventDate)).log"
         let fileURL = resolvedLogDirectory.appendingPathComponent(fileName)
         let data = Data((line + "\n").utf8)
         if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -166,14 +180,10 @@ public final class LogService {
     }
 
     private func timestamp(_ date: Date) -> String {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        return fmt.string(from: date)
+        timestampFormatter.string(from: date)
     }
 
     private func timeOnly(_ date: Date) -> String {
-        let fmt = DateFormatter()
-        fmt.dateFormat = "HH:mm:ss"
-        return fmt.string(from: date)
+        timeFormatter.string(from: date)
     }
 }
