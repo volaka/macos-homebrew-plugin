@@ -11,11 +11,13 @@ public final class UpdateChecker: ObservableObject {
     public var totalCount: Int { outdatedFormulae.count + outdatedCasks.count }
 
     private let service: BrewService
+    private let logger: LogService
     private var timer: Timer?
     public var settings: AppSettings { AppSettings.shared }
 
-    public init(service: BrewService = BrewService()) {
+    public init(service: BrewService = BrewService(), logger: LogService = .shared) {
         self.service = service
+        self.logger = logger
     }
 
     public func start() {
@@ -68,15 +70,21 @@ public final class UpdateChecker: ObservableObject {
     }
 
     private func check() async {
+        let handle = logger.beginEvent(.fetch)
         isChecking = true
         lastError = nil
         do {
-            let result = try await service.fetchOutdated()
+            let result = try await service.fetchOutdatedWithProgress { [logger, handle] line in
+                logger.appendLine(line, to: handle)
+            }
             let ignored = Set(settings.ignoredPackages)
             outdatedFormulae = result.formulae.filter { !ignored.contains($0.name) }
             outdatedCasks = result.casks.filter { !ignored.contains($0.name) }
+            let summary = "\(outdatedFormulae.count) formulae outdated, \(outdatedCasks.count) casks outdated"
+            logger.endEvent(handle, result: .success(summary))
         } catch {
             lastError = error.localizedDescription
+            logger.endEvent(handle, result: .failure(.fetch, error.localizedDescription))
         }
         isChecking = false
     }
