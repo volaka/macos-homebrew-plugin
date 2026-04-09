@@ -114,13 +114,13 @@ final class StatusBarController: NSObject, NSMenuDelegate {
 
     func menuWillOpen(_ menu: NSMenu) {
         isMenuOpen = true
-        // Sync progress bar state in case a check started while menu was closed
-        updateCheckingState(checker.isChecking)
-        // Give the search field first responder so the cursor appears immediately
+        // Set first responder before mutating menu items so AppKit layout doesn't reset focus
         searchField?.stringValue = searchQuery
         if let window = statusItem.button?.window {
             window.makeFirstResponder(searchField)
         }
+        // Sync progress bar state in case a check started while menu was closed
+        updateCheckingState(checker.isChecking)
     }
 
     func menuDidClose(_ menu: NSMenu) {
@@ -187,6 +187,18 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
 
     private func updateCheckingState(_ isChecking: Bool) {
+        // When not checking: always restore Check Now (even if menu is closed) so state is clean.
+        // When checking: only show progress bar if menu is currently open (prevents it on launch).
+        if !isChecking {
+            if let progress = progressMenuItem,
+               let pidx = stableMenu.items.firstIndex(of: progress) {
+                stableMenu.removeItem(at: pidx)
+                stableMenu.insertItem(checkNowMenuItem!, at: pidx)
+            }
+            progressMenuItem = nil
+            return
+        }
+
         guard isMenuOpen else { return }
         guard let checkNowItem = checkNowMenuItem,
               let idx = stableMenu.items.firstIndex(of: checkNowItem) else { return }
@@ -209,14 +221,6 @@ final class StatusBarController: NSObject, NSMenuDelegate {
             stableMenu.removeItem(at: idx)
             stableMenu.insertItem(progressItem, at: idx)
             progressMenuItem = progressItem
-        } else {
-            // Swap progress bar back for Check Now
-            if let progress = progressMenuItem,
-               let pidx = stableMenu.items.firstIndex(of: progress) {
-                stableMenu.removeItem(at: pidx)
-                stableMenu.insertItem(checkNowMenuItem!, at: pidx)
-            }
-            progressMenuItem = nil
         }
     }
 

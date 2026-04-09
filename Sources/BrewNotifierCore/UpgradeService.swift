@@ -40,8 +40,10 @@ public final class UpgradeService {
     }
 
     /// Runs `brew upgrade <package>` non-blockingly, streaming stdout+stderr to progressHandler.
+    /// `logDetail` is the human-readable string shown in the log header (e.g. "argocd 3.3.2 -> 3.3.3").
     public func upgradeWithProgress(
         package: String,
+        logDetail: String? = nil,
         progressHandler: @escaping (String) -> Void
     ) async throws {
         if let exitCode = stubbedExitCode {
@@ -50,7 +52,7 @@ public final class UpgradeService {
             }
             return
         }
-        let eventType = EventType.upgrade(package)
+        let eventType = EventType.upgrade(logDetail ?? package)
         let handle = logger.beginEvent(eventType)
         let combined: (String) -> Void = { [logger, handle] line in
             logger.appendLine(line, to: handle)

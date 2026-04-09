@@ -124,8 +124,11 @@ final class UpgradeWindowController: NSWindowController {
         upgradeTask = Task {
             do {
                 switch target {
-                case .single(let name, _, let newVersion):
-                    try await service.upgradeWithProgress(package: name) { [weak self] line in
+                case .single(let name, let from, let newVersion):
+                    try await service.upgradeWithProgress(
+                        package: name,
+                        logDetail: "\(name) \(from) -> \(newVersion)"
+                    ) { [weak self] line in
                         Task { @MainActor [weak self] in self?.appendLog(line) }
                     }
                     spinner.stopAnimation(nil)

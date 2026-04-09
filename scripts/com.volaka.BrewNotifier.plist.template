@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.volaka.BrewNotifier</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Applications/BrewNotifier.app/Contents/MacOS/BrewNotifier</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>__HOME__/Library/Logs/BrewNotifier/launchagent.log</string>
+    <key>StandardErrorPath</key>
+    <string>__HOME__/Library/Logs/BrewNotifier/launchagent.log</string>
+</dict>
+</plist>
