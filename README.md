@@ -20,16 +20,6 @@ A macOS menu bar app that tracks outdated Homebrew packages and lets you upgrade
 - **Scheduled checks** — interval-based (every N minutes) or daily at a configured hour
 - **Ignored packages** — exclude packages from the outdated list via Settings
 
-## Installation
-
-Download the latest `BrewNotifier-vX.X.X.zip` from [Releases](../../releases), unzip, and move `BrewNotifier.app` to `/Applications`.
-
-**First launch:** macOS will block the app since it's not notarized. Right-click → Open → Open to bypass Gatekeeper, or run:
-
-```bash
-xattr -d com.apple.quarantine /Applications/BrewNotifier.app
-```
-
 ## Requirements
 
 - macOS 13 (Ventura) or later
@@ -46,6 +36,60 @@ swift build
 
 ```bash
 swift test
+```
+
+## Run at Login
+
+### Option A — `just serve-release` (recommended)
+
+Builds a release binary, assembles the `.app` bundle, installs it to `/Applications`, and registers a LaunchAgent so BrewNotifier starts automatically at login:
+
+```bash
+just serve-release
+```
+
+To stop and unregister:
+
+```bash
+just unserve
+```
+
+### Option B — Manual LaunchAgent setup
+
+If you already have the app installed at `/Applications/BrewNotifier.app`:
+
+```bash
+mkdir -p ~/Library/LaunchAgents
+cat > ~/Library/LaunchAgents/com.volaka.BrewNotifier.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.volaka.BrewNotifier</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Applications/BrewNotifier.app/Contents/MacOS/BrewNotifier</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>/Users/YOUR_USERNAME/Library/Logs/BrewNotifier/launchagent.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/YOUR_USERNAME/Library/Logs/BrewNotifier/launchagent.log</string>
+</dict>
+</plist>
+EOF
+
+launchctl load ~/Library/LaunchAgents/com.volaka.BrewNotifier.plist
+```
+
+Replace `YOUR_USERNAME` with your macOS username. To disable:
+
+```bash
+launchctl unload ~/Library/LaunchAgents/com.volaka.BrewNotifier.plist
 ```
 
 ## Project Structure
